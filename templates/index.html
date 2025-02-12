@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="favico" href="../static/img/image.png">
+    <title>Diabetic Retinopathy Prediction</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4CAF50, #2196F3);
+            color: white;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 10px 15px;
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        /* Page Content Styling */
+        .content {
+            margin-top: 80px; /* Offset content due to fixed navbar */
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styling */
+        form {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: none;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #e68900;
+        }
+
+        /* Result Styling */
+        h3 {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+
+        #result {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 200px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <a href="/home">Home</a>
+        <a href="/login">Logout</a>
+    </div>
+
+    <div class="content">
+        <h2>Upload an Image for Prediction</h2>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept="image/*">
+            <br>
+            <button type="submit">Upload & Predict</button>
+        </form>
+
+        <h3>Result:</h3>
+        <p id="result">Waiting for prediction...</p>
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();  // Prevent page reload
+
+            let formData = new FormData();
+            let fileInput = document.getElementById("fileInput").files[0];
+
+            if (!fileInput) {
+                alert("Please select a file.");
+                return;
+            }
+
+            formData.append("file", fileInput);
+
+            // Show loading state
+            document.getElementById("result").innerText = "Processing...";
+            // Send file to Flask backend (DRApp.py)
+            fetch("/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())  // Expect JSON response
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("result").innerText = "Error: " + data.error;
+                } else {
+                    document.getElementById("result").innerText = "Prediction: " + data.prediction;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("result").innerText = "Error occurred. Try again.";
+            });
+        });
+    </script>
+</body>
+</html>
